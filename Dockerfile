@@ -68,6 +68,10 @@ EOF
 RUN chmod +x /app/hostless-init.sh \
     && sed -i '2a /app/hostless-init.sh' /app/docker-entrypoint.sh
 
+# Hostless 只读目录适配
+# 跳过只读系统目录中的全局 CLI 软链接注册
+RUN sed -i 's|    ln -sf /app/baihu /usr/local/bin/baihu|    ln -sf /app/baihu /usr/local/bin/baihu 2>/dev/null || log_warn "系统目录只读，跳过全局 CLI 软链接注册"|' /app/docker-entrypoint-common.sh
+
 # 替换新版 Baihu 启动函数 ，启动入口修改
 RUN sed -i 's/^start_baihu_server "\$@"$/sh \/restore.sh/' /app/docker-entrypoint.sh \
     && echo "========== 修改后的 ENTRYPOINT ==========" \
