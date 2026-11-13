@@ -38,7 +38,11 @@ RUN set -eux; \
     sed -i '2a set -x' /app/docker-entrypoint-common.sh; \
     echo "========== 检查 /app/data 相关命令 =========="; \
     grep -RnE 'ln .*(/app/data|/app/configs|/app/envs)' \
-        /app /usr/local/bin /etc 2>/dev/null || true
+        /app /usr/local/bin /etc /usr/bin 2>/dev/null || true
+
+RUN echo "========== 搜索所有 /app/data 软链接操作 ==========" \
+    && grep -RnE 'ln .*(/app/data|/app/configs|/app/envs)' \
+       /app /usr/local/bin /etc /usr/bin 2>/dev/null | head -n 100 || true
 
 RUN echo "========== 检查所有软链接操作 ==========" \
     && grep -RnE 'ln .*(/app/data|/app/configs|/app/envs|/usr/local/bin/baihu)' \
@@ -86,8 +90,13 @@ RUN chmod +x /app/hostless-init.sh \
 
 # Hostless 只读目录适配
 # 跳过只读系统目录中的全局 CLI 软链接注册
-RUN sed -i 's|    ln -sf /app/baihu /usr/local/bin/baihu|    ln -sf /app/baihu /usr/local/bin/baihu 2>/dev/null || log_warn "系统目录只读，跳过全局 CLI 软链接注册"|' /app/docker-entrypoint-common.sh
-
+RUN set -eux; \
+    sed -i '/ln -sf \/app\/baihu \/usr\/local\/bin\/baihu/d' /app/docker-entrypoint-common.sh; \
+    if grep -q 'ln -sf /app/baihu /usr/local/bin/baihu' /app/docker-entrypoint-common.sh; then \
+        echo "错误：CLI 注册补丁未生效"; \
+        exit 1; \
+    fi
+    
 # 替换新版 Baihu 启动函数 ，启动入口修改
 RUN sed -i 's/^start_baihu_server "\$@"$/sh \/restore.sh/' /app/docker-entrypoint.sh \
     && echo "========== 修改后的 ENTRYPOINT ==========" \
