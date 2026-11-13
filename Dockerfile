@@ -40,15 +40,22 @@ RUN set -eux; \
     \
     if [ -d /app/data ] && [ ! -L /app/data ]; then \
         cp -a /app/data/. /app/.cache/baihu/data/; \
+        rm -rf /app/data; \
     fi; \
     if [ -d /app/configs ] && [ ! -L /app/configs ]; then \
         cp -a /app/configs/. /app/.cache/baihu/configs/; \
+        rm -rf /app/configs; \
     fi; \
     if [ -d /app/envs ] && [ ! -L /app/envs ]; then \
         cp -a /app/envs/. /app/.cache/baihu/envs/; \
-    fi
+        rm -rf /app/envs; \
+    fi; \
+    ln -sfn /app/.cache/baihu/data /app/data; \
+    ln -sfn /app/.cache/baihu/configs /app/configs; \
+    ln -sfn /app/.cache/baihu/envs /app/envs
 
-# 替换新版 Baihu 启动函数 ，启动入口修改
+# Hostless 只读目录适配
+# 容器启动时仅初始化软链接目标目录，不修改软链接
 RUN cat > /app/hostless-init.sh <<'EOF'
 #!/bin/sh
 set -eu
@@ -56,27 +63,13 @@ set -eu
 mkdir -p /app/.cache/baihu/data
 mkdir -p /app/.cache/baihu/configs
 mkdir -p /app/.cache/baihu/envs
-
-for name in data configs envs; do
-    TARGET="/app/$name"
-    DEST="/app/.cache/baihu/$name"
-
-    if [ -L "$TARGET" ]; then
-        rm -f "$TARGET"
-    elif [ -d "$TARGET" ]; then
-        cp -an "$TARGET/." "$DEST/" 2>/dev/null || true
-        rmdir "$TARGET" 2>/dev/null || true
-    fi
-
-    if [ ! -e "$TARGET" ]; then
-        ln -s "$DEST" "$TARGET"
-    fi
-done
 EOF
 
 RUN chmod +x /app/hostless-init.sh \
-    && sed -i '2a /app/hostless-init.sh' /app/docker-entrypoint.sh \
-    && sed -i 's/^start_baihu_server "\$@"$/sh \/restore.sh/' /app/docker-entrypoint.sh \
+    && sed -i '2a /app/hostless-init.sh' /app/docker-entrypoint.sh
+
+# 替换新版 Baihu 启动函数 ，启动入口修改
+RUN sed -i 's/^start_baihu_server "\$@"$/sh \/restore.sh/' /app/docker-entrypoint.sh \
     && echo "========== 修改后的 ENTRYPOINT ==========" \
     && tail -n 15 /app/docker-entrypoint.sh \
     && grep -q '^sh /restore.sh$' /app/docker-entrypoint.sh
