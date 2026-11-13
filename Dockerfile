@@ -29,6 +29,15 @@ RUN set -eux; \
     "$NODE_DIR/node" "$PM2_PATH" -v; \
     printf '%s\n' "$PM2_PATH" > /root/pm2-path
 
+# 验证 PM2 路径文件
+RUN set -eux; \
+    echo "========== PM2 路径检查 =========="; \
+    cat /root/pm2-path; \
+    test -s /root/pm2-path; \
+    test -f "$(cat /root/pm2-path)"; \
+    NODE_BIN="$(mise which node)"; \
+    "$NODE_BIN" "$(cat /root/pm2-path)" -v
+
 RUN rclone config -h
 
 # 复制原恢复脚本
