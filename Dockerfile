@@ -31,6 +31,15 @@ RUN rclone config -h
 # 复制原恢复脚本
 COPY ./restore.sh /restore.sh
 
+# Hostless 只读目录适配
+# 临时跟踪入口脚本执行过程，定位软链接创建来源
+RUN set -eux; \
+    sed -i '2a set -x' /app/docker-entrypoint.sh; \
+    sed -i '2a set -x' /app/docker-entrypoint-common.sh; \
+    echo "========== 检查 /app/data 相关命令 =========="; \
+    grep -RnE 'ln .*(/app/data|/app/configs|/app/envs)' \
+        /app /usr/local/bin /etc 2>/dev/null || true
+
 RUN echo "========== 检查所有软链接操作 ==========" \
     && grep -RnE 'ln .*(/app/data|/app/configs|/app/envs|/usr/local/bin/baihu)' \
        /app/docker-entrypoint.sh \
