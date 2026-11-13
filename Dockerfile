@@ -31,6 +31,13 @@ RUN rclone config -h
 # 复制原恢复脚本
 COPY ./restore.sh /restore.sh
 
+RUN echo "========== 检查所有软链接操作 ==========" \
+    && grep -RnE 'ln .*(/app/data|/app/configs|/app/envs|/usr/local/bin/baihu)' \
+       /app/docker-entrypoint.sh \
+       /app/docker-entrypoint-common.sh \
+       /app/hostless-init.sh \
+       /restore.sh 2>/dev/null || true
+
 # Hostless 只读目录适配
 # 在镜像构建阶段预先创建软链接
 RUN set -eux; \
