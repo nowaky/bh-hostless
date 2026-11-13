@@ -29,6 +29,17 @@ RUN set -eux; \
     "$NODE_DIR/node" "$PM2_PATH" -v; \
     printf '%s\n' "$PM2_PATH" > /root/pm2-path
 
+# 验证 PM2 文件是否保留在最终镜像
+RUN set -eux; \
+    echo "========== PM2 构建阶段验证 =========="; \
+    ls -l /root/pm2-path; \
+    cat /root/pm2-path; \
+    ls -l "$(cat /root/pm2-path)"; \
+    echo "========== Node.js 验证 =========="; \
+    mise which node; \
+    echo "========== PM2 验证 =========="; \
+    "$(mise which node)" "$(cat /root/pm2-path)" -v
+
 # 验证 PM2 路径文件
 RUN set -eux; \
     echo "========== PM2 路径检查 =========="; \
