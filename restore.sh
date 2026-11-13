@@ -92,7 +92,7 @@ if [ -n "$RCLONE_CONF" ]; then
             ./baihu restore "/tmp/baihu-restore/$latest_file"
 
             rm -rf /tmp/baihu-restore
-            pm2 restart baihu
+            "$NODE_BIN" "$PM2_PATH" restart baihu
         fi
     elif echo "$OUTPUT" | grep -q "directory not found"; then
         echo "错误：文件夹不存在"
