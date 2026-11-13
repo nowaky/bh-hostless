@@ -20,14 +20,16 @@ echo "监听端口：${BAIHU_PORT}"
 echo "======================================"
 
 # 配置 PM2 运行环境
-PM2_NODE_DIR="$(cat /root/.pm2-node-dir)"
-export PATH="$PM2_NODE_DIR:$PATH"
+PM2_PATH="$(cat /root/pm2-path)"
+NODE_BIN="$(mise which node)"
 
-echo "PM2 路径: $(command -v pm2)"
-pm2 -v
+echo "PM2 路径: $PM2_PATH"
+echo "Node.js 路径: $NODE_BIN"
+
+"$NODE_BIN" "$PM2_PATH" -v
 
 # 开启白虎服务
-pm2 start "./baihu server" --name baihu
+"$NODE_BIN" "$PM2_PATH" start "./baihu server" --name baihu
 
 echo "10秒后开始恢复任务..."
 sleep 10
