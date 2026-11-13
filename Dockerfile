@@ -24,8 +24,10 @@ RUN set -eux; \
     NODE_BIN="$(mise which node)"; \
     NODE_DIR="$(dirname "$NODE_BIN")"; \
     "$NODE_DIR/npm" install -g pm2; \
+    PM2_BIN="$("$NODE_DIR/npm" bin -g 2>/dev/null || true)"; \
+    echo "Node目录: $NODE_DIR"; \
     "$NODE_DIR/pm2" -v; \
-    ln -s "$NODE_DIR/pm2" /usr/local/bin/pm2
+    echo "$NODE_DIR" > /root/.pm2-node-dir
 
 RUN rclone config -h
 
