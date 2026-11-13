@@ -19,6 +19,13 @@ echo "Baihu 启动与恢复"
 echo "监听端口：${BAIHU_PORT}"
 echo "======================================"
 
+# 配置 PM2 运行环境
+PM2_NODE_DIR="$(cat /root/.pm2-node-dir)"
+export PATH="$PM2_NODE_DIR:$PATH"
+
+echo "PM2 路径: $(command -v pm2)"
+pm2 -v
+
 # 开启白虎服务
 pm2 start "./baihu server" --name baihu
 
