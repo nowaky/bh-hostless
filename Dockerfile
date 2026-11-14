@@ -1,4 +1,4 @@
-```dockerfile
+
 FROM ghcr.io/engigu/baihu:latest
 
 ENV REMOTE_FOLDER="huggingface:baihu"
