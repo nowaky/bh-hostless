@@ -1,4 +1,4 @@
-
+```sh
 #!/bin/sh
 
 # Hostless 可写目录
@@ -19,81 +19,10 @@ echo "Baihu 启动与恢复"
 echo "监听端口：${BAIHU_PORT}"
 echo "======================================"
 
-# Hostless 运行时 PM2 路径诊断
-echo "========== 运行时 PM2 路径诊断 =========="
-echo "检查 /app/.cache："
-ls -ld /app/.cache /app/.cache/baihu 2>&1
-
-echo "检查 PM2 路径文件："
-ls -l /app/.cache/baihu/pm2-path 2>&1
-cat /app/.cache/baihu/pm2-path 2>&1
-
-echo "检查 PM2 实际文件："
-ls -l /app/envs/mise/installs/node/23.11.1/lib/node_modules/pm2/bin/pm2 2>&1
-
-echo "========================================"
-
-echo "========== 运行时 Node.js 环境诊断 =========="
-
-echo "检查 /app/envs："
-ls -ld /app/envs 2>&1
-
-echo "检查 mise 目录："
-ls -ld /app/envs/mise 2>&1
-
-echo "检查 Node.js 安装目录："
-ls -ld /app/envs/mise/installs/node/23.11.1 2>&1
-
-echo "查找 Node.js："
-which node 2>&1
-mise which node 2>&1
-
-echo "查找 PM2："
-find /app/envs /app/.cache /root -path '*/node_modules/pm2/bin/pm2' -type f 2>/dev/null
-
-echo "=============================================="
-
-
-echo "========== npm 全局目录诊断 =========="
-
-NODE_BIN="$(mise which node)"
-NODE_DIR="$(dirname "$NODE_BIN")"
-NPM_BIN="$NODE_DIR/npm"
-
-echo "Node.js：$NODE_BIN"
-echo "npm：$NPM_BIN"
-
-ls -l "$NPM_BIN" 2>&1
-
-echo "npm 全局安装根目录："
-"$NPM_BIN" root -g 2>&1
-
-echo "npm 全局安装包："
-"$NPM_BIN" list -g --depth=0 2>&1
-
-echo "======================================"
-
-
 # 配置 PM2 运行环境
 PM2_PATH_FILE="/usr/local/share/baihu/pm2-path"
 
 if [ ! -s "$PM2_PATH_FILE" ]; then
-    echo "错误：PM2 路径文件不存在：$PM2_PATH_FILE"
-    exit 1
-fi
-
-PM2_PATH="$(cat "$PM2_PATH_FILE")"
-NODE_BIN="$(mise which node)"
-
-if [ ! -f "$PM2_PATH" ]; then
-    echo "错误：PM2 实际文件不存在：$PM2_PATH"
-    exit 1
-fi
-
-echo "PM2 路径: $PM2_PATH"
-echo "Node.js 路径: $NODE_BIN"
-
-if [ ! -f "$PM2_PATH_FILE" ]; then
     echo "错误：PM2 路径文件不存在：$PM2_PATH_FILE"
     exit 1
 fi
@@ -146,45 +75,18 @@ RESET_RESPONSE=$(
   --data-raw "{\"old_password\":\"$DEFAULT_PASSWORD\",\"new_password\":\"$ADMIN_PASSWORD\"}"
 )
 
-
-echo "========== 密码重置诊断 =========="
-
-echo "ADMIN_PASSWORD 是否已设置："
-if [ -n "$ADMIN_PASSWORD" ]; then
-    echo "已设置"
-else
-    echo "未设置或为空"
-fi
-
-echo "DEFAULT_PASSWORD 是否已提取："
-if [ -n "$DEFAULT_PASSWORD" ]; then
-    echo "已提取"
-else
-    echo "提取失败"
-fi
-
-echo "Cookie 文件检查："
-if [ -f cookies.txt ]; then
-    ls -l cookies.txt
-    grep -q 'BHToken' cookies.txt && echo "发现 BHToken" || echo "没有发现 BHToken"
-else
-    echo "cookies.txt 不存在"
-fi
-
-echo "=================================="
-
 echo "密码重置请求完成"
 echo "$RESET_RESPONSE"
 
 echo "======================写入rclone配置========================"
 
-mkdir -p ~/.config/rclone
+mkdir -p /app/.cache/baihu/configs/rclone
 
 if [ -n "$RCLONE_CONF" ]; then
     printf '%s' "$RCLONE_CONF" \
-        | base64 -d > ~/.config/rclone/rclone.conf || exit 1
+        | base64 -d > /app/.cache/baihu/configs/rclone/rclone.conf || exit 1
 
-    export RCLONE_CONFIG="$HOME/.config/rclone/rclone.conf"
+    export RCLONE_CONFIG="/app/.cache/baihu/configs/rclone/rclone.conf"
 
     echo "Rclone 配置写入成功"
 
@@ -222,3 +124,4 @@ fi
 echo "Baihu successful 🎉"
 
 tail -f /dev/null
+```
