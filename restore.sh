@@ -19,8 +19,23 @@ echo "Baihu 启动与恢复"
 echo "监听端口：${BAIHU_PORT}"
 echo "======================================"
 
+# Hostless 运行时 PM2 路径诊断
+echo "========== 运行时 PM2 路径诊断 =========="
+echo "检查 /app/.cache："
+ls -ld /app/.cache /app/.cache/baihu 2>&1
+
+echo "检查 PM2 路径文件："
+ls -l /app/.cache/baihu/pm2-path 2>&1
+cat /app/.cache/baihu/pm2-path 2>&1
+
+echo "检查 PM2 实际文件："
+ls -l /app/envs/mise/installs/node/23.11.1/lib/node_modules/pm2/bin/pm2 2>&1
+
+echo "========================================"
+
 # 配置 PM2 运行环境
-PM2_PATH_FILE="/app/.cache/baihu/pm2-path"
+PM2_PATH="$(cat /app/.cache/baihu/pm2-path)"
+NODE_BIN="$(mise which node)"
 
 if [ ! -f "$PM2_PATH_FILE" ]; then
     echo "错误：PM2 路径文件不存在：$PM2_PATH_FILE"
