@@ -33,6 +33,26 @@ ls -l /app/envs/mise/installs/node/23.11.1/lib/node_modules/pm2/bin/pm2 2>&1
 
 echo "========================================"
 
+echo "========== 运行时 Node.js 环境诊断 =========="
+
+echo "检查 /app/envs："
+ls -ld /app/envs 2>&1
+
+echo "检查 mise 目录："
+ls -ld /app/envs/mise 2>&1
+
+echo "检查 Node.js 安装目录："
+ls -ld /app/envs/mise/installs/node/23.11.1 2>&1
+
+echo "查找 Node.js："
+which node 2>&1
+mise which node 2>&1
+
+echo "查找 PM2："
+find /app/envs /app/.cache /root -path '*/node_modules/pm2/bin/pm2' -type f 2>/dev/null
+
+echo "=============================================="
+
 # 配置 PM2 运行环境
 PM2_PATH="$(cat /app/.cache/baihu/pm2-path)"
 NODE_BIN="$(mise which node)"
