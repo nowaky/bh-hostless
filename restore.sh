@@ -131,7 +131,7 @@ echo "默认用户名: admin"
 echo "============重置密码==============="
 
 BHToken=$(
-curl -c cookies.txt -s -D - -o /dev/null \
+curl -c /tmp/baihu-cookies.txt -s -D - -o /dev/null \
   "http://localhost:${BAIHU_PORT}/api/v1/auth/login" \
   -H 'content-type: application/json' \
   --data-raw "{\"username\":\"admin\",\"password\":\"$DEFAULT_PASSWORD\"}" \
@@ -141,7 +141,7 @@ curl -c cookies.txt -s -D - -o /dev/null \
 sleep 1
 
 RESET_RESPONSE=$(
-  curl -b cookies.txt "http://localhost:${BAIHU_PORT}/api/v1/settings/password" \
+  curl -b /tmp/baihu-cookies.txt "http://localhost:${BAIHU_PORT}/api/v1/settings/password" \
   -H 'content-type: application/json' \
   --data-raw "{\"old_password\":\"$DEFAULT_PASSWORD\",\"new_password\":\"$ADMIN_PASSWORD\"}"
 )
