@@ -20,8 +20,25 @@ echo "监听端口：${BAIHU_PORT}"
 echo "======================================"
 
 # 配置 PM2 运行环境
-PM2_PATH="$(cat /root/pm2-path)"
+PM2_PATH_FILE="/app/.cache/baihu/pm2-path"
+
+if [ ! -f "$PM2_PATH_FILE" ]; then
+    echo "错误：PM2 路径文件不存在：$PM2_PATH_FILE"
+    exit 1
+fi
+
+PM2_PATH="$(cat "$PM2_PATH_FILE")"
 NODE_BIN="$(mise which node)"
+
+if [ -z "$PM2_PATH" ] || [ ! -f "$PM2_PATH" ]; then
+    echo "错误：PM2 文件不存在：$PM2_PATH"
+    exit 1
+fi
+
+if [ -z "$NODE_BIN" ] || [ ! -x "$NODE_BIN" ]; then
+    echo "错误：Node.js 不存在：$NODE_BIN"
+    exit 1
+fi
 
 echo "PM2 路径: $PM2_PATH"
 echo "Node.js 路径: $NODE_BIN"
