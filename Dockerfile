@@ -27,27 +27,28 @@ RUN set -eux; \
     PM2_PATH="$("$NODE_DIR/npm" root -g)/pm2/bin/pm2"; \
     test -f "$PM2_PATH"; \
     "$NODE_DIR/node" "$PM2_PATH" -v; \
-    printf '%s\n' "$PM2_PATH" > /root/pm2-path
+    mkdir -p /app/.cache/baihu; \
+    printf '%s\n' "$PM2_PATH" > /app/.cache/baihu/pm2-path
 
 # 验证 PM2 文件是否保留在最终镜像
 RUN set -eux; \
     echo "========== PM2 构建阶段验证 =========="; \
-    ls -l /root/pm2-path; \
-    cat /root/pm2-path; \
-    ls -l "$(cat /root/pm2-path)"; \
+    ls -l /app/.cache/baihu/pm2-path; \
+    cat /app/.cache/baihu/pm2-path; \
+    ls -l "$(cat /app/.cache/baihu/pm2-path)"; \
     echo "========== Node.js 验证 =========="; \
     mise which node; \
     echo "========== PM2 验证 =========="; \
-    "$(mise which node)" "$(cat /root/pm2-path)" -v
+    "$(mise which node)" "$(cat /app/.cache/baihu/pm2-path)" -v
 
 # 验证 PM2 路径文件
 RUN set -eux; \
     echo "========== PM2 路径检查 =========="; \
-    cat /root/pm2-path; \
-    test -s /root/pm2-path; \
-    test -f "$(cat /root/pm2-path)"; \
+    cat /app/.cache/baihu/pm2-path; \
+    test -s /app/.cache/baihu/pm2-path; \
+    test -f "$(cat /app/.cache/baihu/pm2-path)"; \
     NODE_BIN="$(mise which node)"; \
-    "$NODE_BIN" "$(cat /root/pm2-path)" -v
+    "$NODE_BIN" "$(cat /app/.cache/baihu/pm2-path)" -v
 
 RUN rclone config -h
 
@@ -119,8 +120,8 @@ RUN set -eux; \
         echo "错误：CLI 注册补丁未生效"; \
         exit 1; \
     fi
-    
-# 替换新版 Baihu 启动函数 ，启动入口修改
+
+# 替换新版 Baihu 启动函数，启动入口修改
 RUN sed -i 's/^start_baihu_server "\$@"$/sh \/restore.sh/' /app/docker-entrypoint.sh \
     && echo "========== 修改后的 ENTRYPOINT ==========" \
     && tail -n 15 /app/docker-entrypoint.sh \
