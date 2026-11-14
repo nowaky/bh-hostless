@@ -75,8 +75,23 @@ echo "======================================"
 
 
 # 配置 PM2 运行环境
-PM2_PATH="$(cat /app/.cache/baihu/pm2-path)"
+PM2_PATH_FILE="/usr/local/share/baihu/pm2-path"
+
+if [ ! -s "$PM2_PATH_FILE" ]; then
+    echo "错误：PM2 路径文件不存在：$PM2_PATH_FILE"
+    exit 1
+fi
+
+PM2_PATH="$(cat "$PM2_PATH_FILE")"
 NODE_BIN="$(mise which node)"
+
+if [ ! -f "$PM2_PATH" ]; then
+    echo "错误：PM2 实际文件不存在：$PM2_PATH"
+    exit 1
+fi
+
+echo "PM2 路径: $PM2_PATH"
+echo "Node.js 路径: $NODE_BIN"
 
 if [ ! -f "$PM2_PATH_FILE" ]; then
     echo "错误：PM2 路径文件不存在：$PM2_PATH_FILE"
