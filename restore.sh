@@ -146,6 +146,33 @@ RESET_RESPONSE=$(
   --data-raw "{\"old_password\":\"$DEFAULT_PASSWORD\",\"new_password\":\"$ADMIN_PASSWORD\"}"
 )
 
+
+echo "========== 密码重置诊断 =========="
+
+echo "ADMIN_PASSWORD 是否已设置："
+if [ -n "$ADMIN_PASSWORD" ]; then
+    echo "已设置"
+else
+    echo "未设置或为空"
+fi
+
+echo "DEFAULT_PASSWORD 是否已提取："
+if [ -n "$DEFAULT_PASSWORD" ]; then
+    echo "已提取"
+else
+    echo "提取失败"
+fi
+
+echo "Cookie 文件检查："
+if [ -f cookies.txt ]; then
+    ls -l cookies.txt
+    grep -q 'BHToken' cookies.txt && echo "发现 BHToken" || echo "没有发现 BHToken"
+else
+    echo "cookies.txt 不存在"
+fi
+
+echo "=================================="
+
 echo "密码重置请求完成"
 echo "$RESET_RESPONSE"
 
