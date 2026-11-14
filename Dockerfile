@@ -1,4 +1,4 @@
-
+```dockerfile
 FROM ghcr.io/engigu/baihu:latest
 
 ENV REMOTE_FOLDER="huggingface:baihu"
@@ -29,37 +29,12 @@ RUN set -eux; \
     "$NODE_BIN" "$PM2_PATH" -v; \
     mkdir -p /usr/local/share/baihu; \
     printf '%s\n' "$PM2_PATH" > /usr/local/share/baihu/pm2-path; \
-    echo "========== PM2 镜像目录验证 =========="; \
-    cat /usr/local/share/baihu/pm2-path; \
-    ls -l "$PM2_PATH"; \
-    test -s /usr/local/share/baihu/pm2-path; \
-    "$NODE_BIN" "$PM2_PATH" -v
-
+    test -s /usr/local/share/baihu/pm2-path
 
 RUN rclone config -h
 
 # 复制原恢复脚本
 COPY ./restore.sh /restore.sh
-
-# Hostless 只读目录适配
-# 临时跟踪入口脚本执行过程，定位软链接创建来源
-RUN set -eux; \
-    sed -i '2a set -x' /app/docker-entrypoint.sh; \
-    sed -i '2a set -x' /app/docker-entrypoint-common.sh; \
-    echo "========== 检查 /app/data 相关命令 =========="; \
-    grep -RnE 'ln .*(/app/data|/app/configs|/app/envs)' \
-        /app /usr/local/bin /etc /usr/bin 2>/dev/null || true
-
-RUN echo "========== 搜索所有 /app/data 软链接操作 ==========" \
-    && grep -RnE 'ln .*(/app/data|/app/configs|/app/envs)' \
-       /app /usr/local/bin /etc /usr/bin 2>/dev/null | head -n 100 || true
-
-RUN echo "========== 检查所有软链接操作 ==========" \
-    && grep -RnE 'ln .*(/app/data|/app/configs|/app/envs|/usr/local/bin/baihu)' \
-       /app/docker-entrypoint.sh \
-       /app/docker-entrypoint-common.sh \
-       /app/hostless-init.sh \
-       /restore.sh 2>/dev/null || true
 
 # Hostless 只读目录适配
 # 在镜像构建阶段预先创建软链接
@@ -109,10 +84,9 @@ RUN set -eux; \
 
 # 替换新版 Baihu 启动函数，启动入口修改
 RUN sed -i 's/^start_baihu_server "\$@"$/sh \/restore.sh/' /app/docker-entrypoint.sh \
-    && echo "========== 修改后的 ENTRYPOINT ==========" \
-    && tail -n 15 /app/docker-entrypoint.sh \
     && grep -q '^sh /restore.sh$' /app/docker-entrypoint.sh
 
 # Python 环境
 RUN mise exec python@3.13.12 -- pip install requests
 RUN mise use -g python@3.13.12
+```
