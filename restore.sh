@@ -53,6 +53,27 @@ find /app/envs /app/.cache /root -path '*/node_modules/pm2/bin/pm2' -type f 2>/d
 
 echo "=============================================="
 
+
+echo "========== npm 全局目录诊断 =========="
+
+NODE_BIN="$(mise which node)"
+NODE_DIR="$(dirname "$NODE_BIN")"
+NPM_BIN="$NODE_DIR/npm"
+
+echo "Node.js：$NODE_BIN"
+echo "npm：$NPM_BIN"
+
+ls -l "$NPM_BIN" 2>&1
+
+echo "npm 全局安装根目录："
+"$NPM_BIN" root -g 2>&1
+
+echo "npm 全局安装包："
+"$NPM_BIN" list -g --depth=0 2>&1
+
+echo "======================================"
+
+
 # 配置 PM2 运行环境
 PM2_PATH="$(cat /app/.cache/baihu/pm2-path)"
 NODE_BIN="$(mise which node)"
