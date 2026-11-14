@@ -1,4 +1,4 @@
-```sh
+
 #!/bin/sh
 
 # Hostless 可写目录
@@ -124,4 +124,4 @@ fi
 echo "Baihu successful 🎉"
 
 tail -f /dev/null
-```
+
