@@ -18,37 +18,23 @@ RUN apt-get update && apt-get install -y \
 # 初始化 Node.js 环境
 RUN mise use -g node@23.11.1
 
-# ===== 构建阶段预装 PM2 =====
-# 使用 Mise 管理的 Node.js 安装最新版 PM2
+
+# ===== 构建阶段预装 PM2：安装到镜像固定目录 =====
 RUN set -eux; \
     NODE_BIN="$(mise which node)"; \
     NODE_DIR="$(dirname "$NODE_BIN")"; \
-    "$NODE_DIR/npm" install -g pm2; \
-    PM2_PATH="$("$NODE_DIR/npm" root -g)/pm2/bin/pm2"; \
+    "$NODE_DIR/npm" install -g pm2 --prefix /usr/local; \
+    PM2_PATH="/usr/local/lib/node_modules/pm2/bin/pm2"; \
     test -f "$PM2_PATH"; \
-    "$NODE_DIR/node" "$PM2_PATH" -v; \
-    mkdir -p /app/.cache/baihu; \
-    printf '%s\n' "$PM2_PATH" > /app/.cache/baihu/pm2-path
+    "$NODE_BIN" "$PM2_PATH" -v; \
+    mkdir -p /usr/local/share/baihu; \
+    printf '%s\n' "$PM2_PATH" > /usr/local/share/baihu/pm2-path; \
+    echo "========== PM2 镜像目录验证 =========="; \
+    cat /usr/local/share/baihu/pm2-path; \
+    ls -l "$PM2_PATH"; \
+    test -s /usr/local/share/baihu/pm2-path; \
+    "$NODE_BIN" "$PM2_PATH" -v
 
-# 验证 PM2 文件是否保留在最终镜像
-RUN set -eux; \
-    echo "========== PM2 构建阶段验证 =========="; \
-    ls -l /app/.cache/baihu/pm2-path; \
-    cat /app/.cache/baihu/pm2-path; \
-    ls -l "$(cat /app/.cache/baihu/pm2-path)"; \
-    echo "========== Node.js 验证 =========="; \
-    mise which node; \
-    echo "========== PM2 验证 =========="; \
-    "$(mise which node)" "$(cat /app/.cache/baihu/pm2-path)" -v
-
-# 验证 PM2 路径文件
-RUN set -eux; \
-    echo "========== PM2 路径检查 =========="; \
-    cat /app/.cache/baihu/pm2-path; \
-    test -s /app/.cache/baihu/pm2-path; \
-    test -f "$(cat /app/.cache/baihu/pm2-path)"; \
-    NODE_BIN="$(mise which node)"; \
-    "$NODE_BIN" "$(cat /app/.cache/baihu/pm2-path)" -v
 
 RUN rclone config -h
 
